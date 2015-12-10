@@ -8,21 +8,28 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 
+import game.GameManager;
+import game.Group;
 import game.Player;
 import net.packet.Packet;
 import net.packet.Packet10Login;
 import net.packet.Packet11LoginAccept;
+import net.packet.Packet13CreateRoom;
 
 public class Server implements Runnable{
 	
 	private DatagramSocket socket;
 	private Thread thread;
 	
-	private HashMap<String, Player> clientsMap = new HashMap<String, Player>();
+	private HashMap<InetAddress, Player> clientsMap = new HashMap<InetAddress, Player>();
 	
 	private boolean running = false;
 	
-	public Server(int port){
+	private GameManager gm;
+	
+	public Server(int port, GameManager gm){
+		this.gm = gm;
+		
 		System.out.println("Server created");
 		
 		try {
@@ -82,13 +89,17 @@ public class Server implements Runnable{
 		
 		//System.out.println(message.substring(0, 2));
 		Packet.PacketTypes type = Packet.lookupPacket(Integer.parseInt(message.substring(0, 2)));
-		
+		Packet packet = null;
 		switch(type){
 			case INVALID:
 				break;
 			case LOGIN:
-				Packet10Login packet00 = new Packet10Login(data);
-				handleLogin(packet00, address, port);
+				packet = new Packet10Login(data);
+				handleLogin((Packet10Login) packet, address, port);
+				break;
+			case CREATEROOM:
+				packet = new Packet13CreateRoom(data);
+				handleCreateRoom((Packet13CreateRoom) packet, address, port);
 				break;
 			default:
 				break;
@@ -107,41 +118,18 @@ public class Server implements Runnable{
 	
 	private void handleLogin(Packet10Login packet, InetAddress address, int port){
 		System.out.println("[" + address.getHostAddress() + ":" + port + "] " + packet.getUserName() + " has connected");
+		
 		String name = packet.getUserName();
 		Player player = new Player(name, address, port);
-		addConnection(player, packet);
+		gm.loginRequest(player);
 	}
 	
-	private void addConnection(Player client, Packet packet) {
-    	boolean alreadyConnected = false;
-    	//loop through all the connected players 
-        for (String name : clientsMap.keySet()) {
-        	Player p = clientsMap.get(name);
-            if (name.equalsIgnoreCase(client.getUserName())) {
-                if (p.getIp() == null) {
-                    p.setIp(client.getIp());
-                }
-                if (p.getPort() == -1) {
-                    p.setPort(client.getPort());
-                }
-                alreadyConnected = true;
-            } else {
-                // relay to the current connected player that there is a new
-                // player
-                sendData(packet.getData(), p.getIp(), p.getPort());
-
-                // relay to the new player that the currently connect player
-                // exists
-                packet = new Packet10Login(p.getUserName());
-                sendData(packet.getData(), client.getIp(), client.getPort());
-            }
-        }
-        if (!alreadyConnected) {
-        	System.out.println("Player: " + client.getUserName() + " joined server succesfully");
-            clientsMap.put(client.getUserName(), client);
-        }
-        sendData(new Packet11LoginAccept(client.getUserName()).getData(), client.getIp(), client.getPort());
-    }
+	private void handleCreateRoom(Packet13CreateRoom packet, InetAddress address, int port){
+		System.out.println("[" + address.getHostAddress() + ":" + port + "] " + packet.getRoomName() + " room requested");
+		
+		String name = packet.getRoomName();
+		gm.createRoom(gm.getPlayerMap().get(address), name);
+	}
 
 	public void sendData(byte[] data, InetAddress ip, int port){
 		DatagramPacket packet = new DatagramPacket(data, data.length, ip, port);
@@ -155,15 +143,16 @@ public class Server implements Runnable{
 		}
 	}
 
-	public void sendDataToAllClients(byte[] data) {
-		for(String name : clientsMap.keySet()){
-			Player p = clientsMap.get(name);
+	public void sendDataToAllClientsInGroup(byte[] data, Group group) {
+		for(Player p : group.getPlayers()){
 			sendData(data, p.getIp(), p.getPort());
 		}	
 	}
-
-	public HashMap<String, Player> getClientsMap() {
-		return clientsMap;
+	
+	public void sendDataToAllClients(byte[] data) {
+		for(Player p : gm.getPlayerMap().values()){
+			sendData(data, p.getIp(), p.getPort());
+		}	
 	}
 
 }

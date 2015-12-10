@@ -18,9 +18,11 @@ public class CoreEngine {
 	
 	protected synchronized void start(){
 		running = true;
-		Server server = new Server(port);
-		server.start();
+		
+		Server server = new Server(port, gm);
 		gm = new GameManager(server);
+		server.start();
+		
 		gameLoop();
 	}
 	

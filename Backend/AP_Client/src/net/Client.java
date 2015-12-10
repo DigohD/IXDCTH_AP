@@ -117,10 +117,6 @@ public class Client implements Runnable{
 		Packet packet = null;
 		
 		switch(type){
-			case LOGIN:
-				packet = new Packet10Login(data);
-				handleLogin(packet, address, port);
-				break;
 			case LOGINACCEPT:
 				connected = true;
 				System.out.println("ACCEPT PACKET RECEIVED");
@@ -155,25 +151,6 @@ public class Client implements Runnable{
 				break;
 		}
 	}
-
-	private void handleLogin(Packet packet, InetAddress address, int port) {
-		Packet10Login p = (Packet10Login) packet;
-		
-		/*if(!(p.getUserName().equalsIgnoreCase(this.userName))){
-			clientsMap.put(p.getUserName(), new Player(p.getUserName(), address, port));
-		}*/
-		System.out.println(p.getUserName() + " has joined!");
-		
-		
-	}
-	
-	/*private void handleDisconnect(Packet packet, InetAddress address, int port) {
-		Packet12Disconnect p = (Packet12Disconnect) packet;
-		if(clientsMap.containsKey(p.getUserName())){
-			clientsMap.get(p.getUserName()).setLive(false);
-			clientsMap.remove(p.getUserName());
-		}
-	}*/
 	
 	private void handleConnect(Packet packet, InetAddress address, int port){
 		System.out.println("CONNECTED");
