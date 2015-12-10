@@ -13,11 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import game.Player;
-import net.packet.Packet;
-import net.packet.Packet10Login;
-import net.packet.Packet11LoginAccept;
-import net.packet.Packet12Disconnect;
-import net.packet.Packet13Connect;
+import net.packet.*;
 
 public class Client implements Runnable{
 	
@@ -41,9 +37,12 @@ public class Client implements Runnable{
 	private Packet10Login loginPacket;
 	private String userName;
 	
-	public Client(String userName, String ip, int port){
+	private ClientInterface clientInterface;
+	
+	public Client(String userName, String ip, int port, ClientInterface cientInterface){
 		this.userName = userName;
 		this.port = port;
+		this.clientInterface = cientInterface;
 		
 		try {
 			this.ip = InetAddress.getByName(ip);
@@ -130,6 +129,21 @@ public class Client implements Runnable{
 				packet = new Packet11LoginAccept(data);
 				handleLoginAccept(packet, address, port);
 				break;
+			case LOGINFAILED:
+				System.out.println("FAILED LOGIN PACKET RECEIVED");
+				packet = new Packet12LoginFailed(data);
+				handleLoginFailed(packet, address, port);
+				break;
+			case ROOMCREATED:
+				System.out.println("ROOM CREATED PACKET RECEIVED");
+				packet = new Packet14RoomCreated(data);
+				handleRoomCreated(packet, address, port);
+				break;
+			case ROOMFAILED:
+				System.out.println("ROOM FAILED PACKET RECEIVED");
+				packet = new Packet15RoomFailed(data);
+				handleRoomFailed(packet, address, port);
+				break;
 			/*case CONNECT:
 				System.out.println("CONNECT PACKET RECEIVED");
 				packet = new Packet13Connect(data);
@@ -147,19 +161,21 @@ public class Client implements Runnable{
 	private void handleLogin(Packet packet, InetAddress address, int port) {
 		Packet10Login p = (Packet10Login) packet;
 		
-		if(!(p.getUserName().equalsIgnoreCase(this.userName))){
+		/*if(!(p.getUserName().equalsIgnoreCase(this.userName))){
 			clientsMap.put(p.getUserName(), new Player(p.getUserName(), address, port));
-		}
-		else System.out.println(p.getUserName() + " has joined!");
+		}*/
+		System.out.println(p.getUserName() + " has joined!");
+		
+		
 	}
 	
-	private void handleDisconnect(Packet packet, InetAddress address, int port) {
+	/*private void handleDisconnect(Packet packet, InetAddress address, int port) {
 		Packet12Disconnect p = (Packet12Disconnect) packet;
 		if(clientsMap.containsKey(p.getUserName())){
 			clientsMap.get(p.getUserName()).setLive(false);
 			clientsMap.remove(p.getUserName());
 		}
-	}
+	}*/
 	
 	private void handleConnect(Packet packet, InetAddress address, int port){
 		System.out.println("CONNECTED");
@@ -167,6 +183,32 @@ public class Client implements Runnable{
 	
 	private void handleLoginAccept(Packet packet, InetAddress address, int port){
 		System.out.println("ACCEPTED BY SERVER");
+		
+		clientInterface.loginAccept();
+	}
+	
+	private void handleLoginFailed(Packet packet, InetAddress address, int port){
+		System.out.println("FAILED LOGIN BY SERVER");
+		
+		Packet12LoginFailed p = (Packet12LoginFailed) packet;
+		
+		clientInterface.loginFailed(p.getReason());
+	}
+	
+	private void handleRoomCreated(Packet packet, InetAddress address, int port){
+		System.out.println("ROOM HAS BEEN CREATED BY SERVER");
+		
+		Packet14RoomCreated p = (Packet14RoomCreated) packet;
+		
+		clientInterface.roomCreated();
+	}
+	
+	private void handleRoomFailed(Packet packet, InetAddress address, int port){
+		System.out.println("FAILED ROOM CREATION BY SERVER");
+		
+		Packet15RoomFailed p = (Packet15RoomFailed) packet;
+		
+		clientInterface.roomFailed(p.getReason());
 	}
 	
 	public void sendData(byte[] data){

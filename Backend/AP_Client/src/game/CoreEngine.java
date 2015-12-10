@@ -1,8 +1,9 @@
 package game;
 import net.Client;
 import net.Server;
+import net.ClientInterface;
 
-public class CoreEngine {
+public class CoreEngine implements ClientInterface {
 	
 	public static int TARGET_TPS = 10;
 	public static float dt = (float) ((1.0 / TARGET_TPS) * 10);
@@ -17,7 +18,7 @@ public class CoreEngine {
 	
 	protected synchronized void start(){
 		running = true;
-		Client client = new Client("DGD", "localhost", port);
+		Client client = new Client("DGD", "localhost", port, this);
 		client.start();
 		gameLoop();
 	}
@@ -60,6 +61,66 @@ public class CoreEngine {
 	}
 	
 	public void tick(float dt) {
+		
+	}
+
+	@Override
+	public void loginAccept() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void loginFailed(String reason) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void roomCreated() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void roomJoined(String colorID) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void gameBegin(boolean isQuestioneer) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void questionReceived(String question) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void answerReceived(String nameOfAnswerer) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void startDiscussion(String[] answers) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void roomFailed(String reason) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void joinFailed(String reason) {
+		// TODO Auto-generated method stub
 		
 	}
 }

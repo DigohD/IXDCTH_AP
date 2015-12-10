@@ -9,6 +9,8 @@ public class CoreEngine {
 	
 	final int port = 12753;
 	
+	private GameManager gm;
+	
 	public static void main(String[] args){
 		CoreEngine game = new CoreEngine();
 		game.start();
@@ -18,6 +20,7 @@ public class CoreEngine {
 		running = true;
 		Server server = new Server(port);
 		server.start();
+		gm = new GameManager(server);
 		gameLoop();
 	}
 	
@@ -59,6 +62,6 @@ public class CoreEngine {
 	}
 	
 	public void tick(float dt) {
-		
+		gm.tick(dt);
 	}
 }
