@@ -9,11 +9,10 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 
-import game.Player;
 import net.packet.Packet;
 import net.packet.Packet10Login;
 import net.packet.Packet11LoginAccept;
 
 public class Server{
-
+	// Placeholder, for packets
 }

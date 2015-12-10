@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import game.Player;
 import net.packet.*;
 
 public class Client implements Runnable{
@@ -29,7 +28,6 @@ public class Client implements Runnable{
 	
 	public boolean connected = false;
 	
-	private HashMap<String, Player> clientsMap = new HashMap<String, Player>();
 	private HashMap<Byte, Integer> byteToIntMap = new HashMap<Byte, Integer>();
 	
 	public LinkedList<Integer> pixels = new LinkedList<Integer>();
@@ -220,10 +218,6 @@ public class Client implements Runnable{
 				e.printStackTrace();
 			}
 		}
-	}
-
-	public HashMap<String, Player> getClientsMap() {
-		return clientsMap;
 	}
 
 	public String getUserName() {
